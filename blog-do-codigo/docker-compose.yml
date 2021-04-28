@@ -1,0 +1,20 @@
+version: "3"
+services:
+  redis:
+    image: redis
+    container_name: cache
+    expose:
+      - 6379
+      
+  blog:
+    build: .
+    environment:
+    - TZ=America/Sao_Paulo
+    volumes:
+      - ./src:/app/blog/src
+    ports:
+    - "3000:3000"
+    links:
+      - redis
+    environment:
+      - REDIS_URL=redis://cache
