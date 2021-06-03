@@ -4,7 +4,7 @@ const {
 } = require('../erros');
 
 const tokens = require('./tokens')
-
+const emails = require('./emails');
 
 
 module.exports = {
@@ -22,6 +22,8 @@ module.exports = {
       });
       await usuario.adicionaSenha(senha);
       await usuario.adiciona();
+
+      emails.enviaEmail(usuario).catch(console.log);
 
       res.status(201).json();
     } catch (erro) {
