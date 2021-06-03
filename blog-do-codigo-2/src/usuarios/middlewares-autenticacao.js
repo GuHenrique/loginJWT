@@ -1,12 +1,6 @@
 const passport = require('passport');
 const Usuario = require('./usuarios-modelo');
-const allowlistRefreshToken = require('../../redis/allowlist-refresh-token');
 const tokens = require('./tokens');
-
-
-async function invalidaRefreshToken(refreshToken) {
-  await allowlistRefreshToken.deleta(refreshToken);
-}
 
 module.exports = {
   local(req, res, next) {
@@ -33,6 +27,8 @@ module.exports = {
   },
 
   bearer(req, res, next) {
+    console.log('Next Bearer')
+
     passport.authenticate(
       'bearer',
       { session: false },
@@ -48,6 +44,7 @@ module.exports = {
         }
 
         if (erro) {
+          console.log('baerer Erro', erro)
           return res.status(500).json({ erro: erro.message });
         }
 
@@ -63,20 +60,19 @@ module.exports = {
   },
 
   async refresh(req, res, next) {
-
     try {
       const {refreshToken} = req.body;
       
       const id = await tokens.refresh.verifica(refreshToken);
-      await invalidaRefreshToken(refreshToken);
+      await tokens.refresh.invalida(refreshToken);
       req.user = await Usuario.buscaPorId(id);
+      console.log('Next Refresh')
       return next();
       
     } catch (error) {
       if(error.name === 'InvalidArgumentError'){
         return res.status(401).json({erro: error.message});
       }
-
       return res.status(500).json({erro: error.message});
     }
   } 

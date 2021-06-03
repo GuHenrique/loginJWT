@@ -34,12 +34,19 @@ async function verificaTokenNaBlocklist(token, blocklist) {
   }
 }
 
+function invalidaTokenJWT(token, blocklist){
+  return blocklist.adiciona(token);
+}
+
 async function verificaTokenOpaco(token, nome, allowlist) {
   verificaTokenEnviado(token, nome); 
   const id = await allowlist.buscaValor(token);
   verificaTokenValido(id, nome);
   return id;
+}
 
+async function invalidaTokenOpaco(token, allowlist) {
+  return await allowlist.deleta(token);
 }
 
 function verificaTokenValido(id, nome) {
@@ -63,6 +70,9 @@ module.exports = {
     },
     verifica(token){
       return verificaTokenJWT(token,this.lista);
+    },
+    invalida(token){
+      return invalidaTokenJWT(token, this.lista);
     }
   },
   refresh: {
@@ -75,7 +85,11 @@ module.exports = {
     },
     verifica(token){
       return verificaTokenOpaco(token, this.nome, this.lista);
+    },
+    invalida(token){
+      return invalidaTokenOpaco(token, this.lista)
     }
+
     
   }
 }

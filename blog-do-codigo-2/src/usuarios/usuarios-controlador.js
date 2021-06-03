@@ -3,7 +3,6 @@ const {
   InvalidArgumentError
 } = require('../erros');
 
-const blocklist = require('../../redis/blocklist-access-token');
 const tokens = require('./tokens')
 
 
@@ -56,7 +55,7 @@ module.exports = {
   async logout(req, res) {
     try {
       const token = req.token;
-      await blocklist.adiciona(token);
+      await tokens.access.invalida(token);
       res.status(204).json();
     } catch (erro) {
       res.status(500).json({
