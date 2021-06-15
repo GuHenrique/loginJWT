@@ -1,27 +1,33 @@
 const Usuario = require('./usuarios-modelo');
-const { InvalidArgumentError } = require('../erros');
+const {
+  InvalidArgumentError
+} = require('../erros');
 
-const tokens = require('./tokens');
-const { EmailVerificacao } = require('./emails');
+const tokens = require('./tokens')
+const {EmailVerificacao} = require('./emails');
 
-function geraEndereco(rota, token) {
+function geraEndereco(rota, token){
   const baseURL = process.env.BASE_URL;
   return `${baseURL}${rota}${token}`;
 }
 
 module.exports = {
   async adiciona(req, res) {
-    const { nome, email, senha } = req.body;
+    const {
+      nome,
+      email,
+      senha
+    } = req.body;
 
     try {
       const usuario = new Usuario({
         nome,
         email,
-        emailVerificado: false,
+        emailVerificado: false
       });
       await usuario.adicionaSenha(senha);
       await usuario.adiciona();
-
+      
       const token = tokens.verificacaoEmail.cria(usuario.id);
       const endereco = geraEndereco('/usuario/verifica_email/', token);
       const emailVerificacao = new EmailVerificacao(usuario, endereco);
@@ -30,9 +36,13 @@ module.exports = {
       res.status(201).json();
     } catch (erro) {
       if (erro instanceof InvalidArgumentError) {
-        return res.status(400).json({ erro: erro.message });
+        return res.status(400).json({
+          erro: erro.message
+        });
       }
-      res.status(500).json({ erro: erro.message });
+      res.status(500).json({
+        erro: erro.message
+      });
     }
   },
 
@@ -40,10 +50,15 @@ module.exports = {
     try {
       const accessToken = tokens.access.cria(req.user.id);
       const refreshToken = await tokens.refresh.cria(req.user.id);
+
       res.set('Authorization', accessToken);
-      res.status(200).json({ refreshToken });
+      res.status(200).json({
+        refreshToken
+      });
     } catch (erro) {
-      res.status(500).json({ erro: erro.message });
+      res.status(500).json({
+        erro: erro.message
+      });
     }
   },
 
@@ -53,7 +68,9 @@ module.exports = {
       await tokens.access.invalida(token);
       res.status(204).json();
     } catch (erro) {
-      res.status(500).json({ erro: erro.message });
+      res.status(500).json({
+        erro: erro.message
+      });
     }
   },
 
@@ -62,7 +79,9 @@ module.exports = {
       const usuarios = await Usuario.lista();
       res.json(usuarios);
     } catch (erro) {
-      res.status(500).json({ erro: erro.message });
+      res.status(500).json({
+        erro: erro.message
+      });
     }
   },
 
@@ -71,8 +90,11 @@ module.exports = {
       const usuario = req.user;
       await usuario.verificaEmail();
       res.status(200).json();
-    } catch (erro) {
-      res.status(500).json({ erro: erro.message });
+
+    } catch (error) {
+      res.status(500).json({
+        erro: erro.message
+      });
     }
   },
 
@@ -82,7 +104,9 @@ module.exports = {
       await usuario.deleta();
       res.status(200).json();
     } catch (erro) {
-      res.status(500).json({ erro: erro });
+      res.status(500).json({
+        erro: erro
+      });
     }
   },
 };

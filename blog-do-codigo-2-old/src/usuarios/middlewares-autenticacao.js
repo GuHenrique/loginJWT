@@ -1,6 +1,5 @@
 const passport = require('passport');
 const Usuario = require('./usuarios-modelo');
-const { InvalidArgumentError } = require('../erros');
 const tokens = require('./tokens');
 
 module.exports = {
@@ -28,6 +27,7 @@ module.exports = {
   },
 
   bearer(req, res, next) {
+
     passport.authenticate(
       'bearer',
       { session: false },
@@ -59,39 +59,39 @@ module.exports = {
 
   async refresh(req, res, next) {
     try {
-      const { refreshToken } = req.body;
+      const {refreshToken} = req.body;
+      
       const id = await tokens.refresh.verifica(refreshToken);
       await tokens.refresh.invalida(refreshToken);
       req.user = await Usuario.buscaPorId(id);
       return next();
-    } catch (erro) {
-      if (erro.name === 'InvalidArgumentError') {
-        return res.status(401).json({ erro: erro.message });
+      
+    } catch (error) {
+      if(error.name === 'InvalidArgumentError'){
+        return res.status(401).json({erro: error.message});
       }
-      return res.status(500).json({ erro: erro.message });
+      return res.status(500).json({erro: error.message});
     }
   },
 
-  async verificacaoEmail(req, res, next) {
+  async verificacoEmail(req, res, next) {
     try {
-      const { token } = req.params;
+      const {token} = req.params;
       const id = await tokens.verificacaoEmail.verifica(token);
       const usuario = await Usuario.buscaPorId(id);
-      req.user = usuario;
+      req.user  = usuario;
       next();
-    } catch (erro) {
-      if (erro.name === 'JsonWebTokenError') {
-        return res.status(401).json({ erro: erro.message });
-      }
 
-      if (erro.name === 'TokenExpiredError') {
-        return res.status(401).json({
-          erro: erro.message,
-          expiradoEm: erro.expiredAt,
-        });
-      }
+    } catch (error) {
+     if(error.name ==='JsonWebTokenError'){
+       return res.status(401).json({erro: error.message});
+     }
 
-      return res.status(500).json({ erro: erro.message });
+     if(error.name === 'TokenExpiredError'){
+       return res.status(401).json({ erro: error.message, expiradoEm: error.expiredAt})
+     }
+
+     return res.status(500).json({ erro: error .message})
     }
   },
 };

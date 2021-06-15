@@ -1,21 +1,17 @@
 const usuariosControlador = require('./usuarios-controlador');
 const middlewaresAutenticacao = require('./middlewares-autenticacao');
 
-module.exports = app => {
+module.exports = (app) => {
   app
     .route('/usuario/atualiza_token')
-    .post(middlewaresAutenticacao.refresh, usuariosControlador.login);
-
+    .post(middlewaresAutenticacao.refresh, usuariosControlador.login)
   app
     .route('/usuario/login')
     .post(middlewaresAutenticacao.local, usuariosControlador.login);
 
   app
     .route('/usuario/logout')
-    .post(
-      [middlewaresAutenticacao.refresh, middlewaresAutenticacao.bearer],
-      usuariosControlador.logout
-    );
+    .post([middlewaresAutenticacao.refresh, middlewaresAutenticacao.bearer], usuariosControlador.logout);
 
   app
     .route('/usuario')
@@ -23,11 +19,8 @@ module.exports = app => {
     .get(usuariosControlador.lista);
 
   app
-    .route('/usuario/verifica_email/:token')
-    .get(
-      middlewaresAutenticacao.verificacaoEmail,
-      usuariosControlador.verificaEmail
-    );
+  .route('/usuario/verifica_email/:token')
+  .get(middlewaresAutenticacao.verificacoEmail, usuariosControlador.verificaEmail);
 
   app
     .route('/usuario/:id')

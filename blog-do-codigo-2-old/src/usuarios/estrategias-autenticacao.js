@@ -7,7 +7,6 @@ const Usuario = require('./usuarios-modelo');
 const { InvalidArgumentError } = require('../erros');
 
 const bcrypt = require('bcrypt');
-
 const tokens = require('./tokens');
 
 function verificaUsuario(usuario) {
@@ -15,6 +14,7 @@ function verificaUsuario(usuario) {
     throw new InvalidArgumentError('Não existe usuário com esse e-mail!');
   }
 }
+
 
 
 async function verificaSenha(senha, senhaHash) {
