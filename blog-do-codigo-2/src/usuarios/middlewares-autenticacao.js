@@ -27,7 +27,6 @@ module.exports = {
   },
 
   bearer(req, res, next) {
-    console.log('Next Bearer')
 
     passport.authenticate(
       'bearer',
@@ -44,7 +43,6 @@ module.exports = {
         }
 
         if (erro) {
-          console.log('baerer Erro', erro)
           return res.status(500).json({ erro: erro.message });
         }
 
@@ -66,7 +64,6 @@ module.exports = {
       const id = await tokens.refresh.verifica(refreshToken);
       await tokens.refresh.invalida(refreshToken);
       req.user = await Usuario.buscaPorId(id);
-      console.log('Next Refresh')
       return next();
       
     } catch (error) {
@@ -75,5 +72,26 @@ module.exports = {
       }
       return res.status(500).json({erro: error.message});
     }
-  } 
+  },
+
+  async verificacoEmail(req, res, next) {
+    try {
+      const {token} = req.params;
+      const id = await tokens.verificacaoEmail.verifica(token);
+      const usuario = await Usuario.buscaPorId(id);
+      req.user  = usuario;
+      next();
+
+    } catch (error) {
+     if(error.name ==='JsonWebTokenError'){
+       return res.status(401).json({erro: error.message});
+     }
+
+     if(error.name === 'TokenExpiredError'){
+       return res.status(401).json({ erro: error.message, expiradoEm: error.expiredAt})
+     }
+
+     return res.status(500).json({ erro: error .message})
+    }
+  },
 };

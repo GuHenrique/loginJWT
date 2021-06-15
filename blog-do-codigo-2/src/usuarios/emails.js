@@ -1,24 +1,54 @@
 const nodemailer = require('nodemailer');
 
-async function enviaEmail(usuario){
-  const contaTeste = await nodemailer.createTestAccount();
-  const transportador = nodemailer.createTransport({
-    host: 'smtp.ethereal.email',
-    auth: contaTeste,
-  });
+const configuracaoEmailProducao = {
+  host: process.env.EMAIL_HOST,
+  auth: {
+    user: process.env.EMAIL_USUSARIO,
+    pass: process.env.EMAIL_SENHA
+  },
+  secure: true
+}
 
-  const info = await transportador.sendMail({
-    from: '"Blog do Código"<noreply@blogdocodigo.com.br>',
-    to: usuario.email,
-    subject: 'Teste de e-mail',
-    text: 'Corpo do e-mail',
-    html: '<h1> Olá</h1>, <p> Este é um e-mail de teste.</p>'
-    
-  });
+const configuracaiEmailTeste = (contaTeste) => ({
+  host: 'smtp.ethereal.email',
+  auth: contaTeste,
+});
 
-  console.log('URL: ' + nodemailer.getTestMessageUrl(info));
+async function criaConfiguracaoEmail() {
+  if (process.env.NODE_ENV === 'production') {
 
+    return configuracaoEmailProducao;
+  } else {
+
+    const contaTeste = await nodemailer.createTestAccount();
+    return configuracaiEmailTeste(contaTeste)
+  }
+}
+
+class Email {
+  async enviaEmail() {
+    const configuracaoEmail = await criaConfiguracaoEmail();
+    const transportador = nodemailer.createTransport(configuracaoEmail);
+    const info = await transportador.sendMail(this);
+
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('URL: ' + nodemailer.getTestMessageUrl(info));
+    }
+  }
+}
+
+class EmailVerificacao extends Email {
+  constructor(usuario, endereco) {
+    super();
+    this.from = '"Blog do Código" <noreply@blogdocodigo.com.br>';
+    this.to = usuario.email;
+    this.subject = 'Verificacao de e-mail';
+    this.text = `Olá! Verifique seu e-mail aqui: ${endereco}`
+    this.html = `<h1>Olá!</h1> Verifique seu e-mail aqui: <a href="${endereco}">${endereco}</a>`
+  }
 }
 
 
-module.exports = {enviaEmail}
+module.exports = {
+  EmailVerificacao
+}
